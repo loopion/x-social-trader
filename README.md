@@ -28,10 +28,22 @@ uv sync --all-groups
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy backend/
+make migrate                  # alembic upgrade head
+make seed                     # idempotent seed (settings + demo accounts + aliases)
 uv run pytest
 uv run uvicorn backend.api.main:app --reload
 # → http://localhost:8000/health
 ```
+
+### Migrations
+
+```bash
+make migrate                           # upgrade head
+make migrate-down                      # downgrade one revision
+make migrate-new msg='add X to Y'      # autogenerate new revision
+```
+
+Les tables `llm_decisions`, `rule_evaluations`, `orders`, `fills`, `kill_switch_events` sont protégées par des triggers SQLite `BEFORE UPDATE/DELETE` qui rejettent toute mutation (INV-4). Toute migration qui tente de les modifier doit être revue attentivement.
 
 ### Frontend
 

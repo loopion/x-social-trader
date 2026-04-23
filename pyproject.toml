@@ -11,6 +11,10 @@ dependencies = [
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "structlog>=24.4",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "aiosqlite>=0.20",
+    "alembic>=1.14",
+    "greenlet>=3.1",
 ]
 
 [dependency-groups]
@@ -59,8 +63,11 @@ select = [
 ignore = []
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "T20"]
+# S101 assert OK in tests; T20 print OK; S608 f-string SQL with a table-name
+# constant from AUDIT_TABLES is the point of the test.
+"tests/**" = ["S101", "T20", "S603", "S608"]
 "backend/workers/*_stub.py" = ["T20"]  # stubs print to stdout
+"scripts/**" = ["T20"]                 # CLI utilities print progress
 
 [tool.ruff.format]
 quote-style = "double"
@@ -97,7 +104,7 @@ filterwarnings = ["error"]
 # -----------------------------------------------------------------------------
 [tool.coverage.run]
 branch = true
-source = ["backend/api", "backend/core"]
+source = ["backend/api", "backend/core", "backend/db", "backend/models"]
 omit = ["backend/workers/*_stub.py", "tests/*"]
 
 [tool.coverage.report]

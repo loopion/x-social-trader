@@ -28,6 +28,9 @@ repos:
           - pydantic-settings>=2.6
           - fastapi>=0.115
           - structlog>=24.4
+          - sqlalchemy[asyncio]>=2.0.36
+          - aiosqlite>=0.20
+          - alembic>=1.14
         args: [--strict, --config-file=pyproject.toml]
         files: ^backend/
 
