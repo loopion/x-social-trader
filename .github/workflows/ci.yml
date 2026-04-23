@@ -1,0 +1,86 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.13"
+          enable-cache: true
+      - name: Install Python
+        run: uv python install 3.11
+      - name: Sync deps (dev + test)
+        run: uv sync --all-groups
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format check
+        run: uv run ruff format --check .
+      - name: Mypy strict
+        run: uv run mypy backend/
+
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.13"
+          enable-cache: true
+      - name: Install Python
+        run: uv python install 3.11
+      - name: Sync deps
+        run: uv sync --all-groups
+      - name: Pytest + coverage
+        run: uv run pytest --cov=backend --cov-report=xml --cov-report=term
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-backend
+          path: coverage.xml
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          # cache path becomes valid once package-lock.json is committed
+      - name: Install deps
+        run: npm install
+      - name: Type check
+        run: npm run type-check
+      - name: Unit tests
+        run: npm test
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install detect-secrets
+        run: pip install detect-secrets==1.5.0
+      - name: Scan against baseline
+        run: |
+          detect-secrets scan --baseline .secrets.baseline
+          if ! git diff --exit-code .secrets.baseline; then
+            echo "::error::New secrets detected. Review and update .secrets.baseline locally if legitimate."
+            exit 1
+          fi

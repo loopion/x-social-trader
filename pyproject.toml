@@ -1,0 +1,113 @@
+[project]
+name = "x-social-trader"
+version = "0.1.0"
+description = "LLM-powered X (Twitter) → rules → broker pipeline with strict safety invariants."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "loopion" }]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "structlog>=24.4",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pre-commit>=4.0",
+    "detect-secrets>=1.5",
+]
+test = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "httpx>=0.27",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend"]
+
+# -----------------------------------------------------------------------------
+# Ruff — lint + format
+# -----------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["frontend", "data", "logs"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle + pyflakes
+    "I",             # isort
+    "B",             # bugbear
+    "UP",            # pyupgrade
+    "SIM",           # simplify
+    "TID",           # tidy imports
+    "RUF",           # ruff-specific
+    "ASYNC",         # async hygiene
+    "T20",           # banish print()
+    "S",             # bandit
+]
+# S101: assert allowed in tests (enforced via per-file-ignores)
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "T20"]
+"backend/workers/*_stub.py" = ["T20"]  # stubs print to stdout
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# -----------------------------------------------------------------------------
+# Mypy — strict mode per CLAUDE.md §7
+# -----------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+exclude = ["frontend/", "data/", "logs/"]
+# Tests override re-added in phase 2 when mypy also runs on tests/.
+
+# -----------------------------------------------------------------------------
+# Pytest
+# -----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q --strict-markers --strict-config"
+filterwarnings = ["error"]
+
+# -----------------------------------------------------------------------------
+# Coverage — global ≥ 80 %, risk_manager 100 % (enforced once phase 6 lands)
+# -----------------------------------------------------------------------------
+[tool.coverage.run]
+branch = true
+source = ["backend/api", "backend/core"]
+omit = ["backend/workers/*_stub.py", "tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    'if __name__ == .__main__.:',
+    "raise NotImplementedError",
+    "class .*\\bProtocol\\):",
+    "@overload",
+]
