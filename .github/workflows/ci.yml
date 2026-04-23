@@ -28,6 +28,8 @@ jobs:
         run: uv run ruff format --check .
       - name: Mypy strict
         run: uv run mypy backend/
+      - name: Import boundaries (PROV-01)
+        run: uv run lint-imports
 
   test-backend:
     runs-on: ubuntu-latest

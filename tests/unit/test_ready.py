@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import (
+    AsyncIterator,
+    Iterator,
+)
 from typing import Any
 from unittest.mock import AsyncMock
 
@@ -34,8 +37,8 @@ def _override_session(db_ok: bool) -> None:
 
 
 @pytest.fixture(autouse=True)
-def reset_overrides() -> AsyncIterator[None]:
-    yield  # type: ignore[misc]
+def reset_overrides() -> Iterator[None]:
+    yield
     app.dependency_overrides.clear()
 
 

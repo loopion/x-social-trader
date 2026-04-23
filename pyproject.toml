@@ -25,6 +25,7 @@ dev = [
     "mypy>=1.13",
     "pre-commit>=4.0",
     "detect-secrets>=1.5",
+    "import-linter>=2.0",
 ]
 test = [
     "pytest>=8.3",
@@ -106,7 +107,13 @@ filterwarnings = ["error"]
 # -----------------------------------------------------------------------------
 [tool.coverage.run]
 branch = true
-source = ["backend/api", "backend/core", "backend/db", "backend/models"]
+source = [
+    "backend/api",
+    "backend/core",
+    "backend/db",
+    "backend/models",
+    "backend/providers",
+]
 omit = ["backend/workers/*_stub.py", "tests/*"]
 
 [tool.coverage.report]
@@ -119,4 +126,27 @@ exclude_lines = [
     "raise NotImplementedError",
     "class .*\\bProtocol\\):",
     "@overload",
+]
+
+# -----------------------------------------------------------------------------
+# Import-linter — PROV-01: keep broker / social / LLM SDKs scoped to providers/
+# -----------------------------------------------------------------------------
+[tool.importlinter]
+root_package = "backend"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "External provider SDKs must only be imported inside backend.providers"
+type = "forbidden"
+source_modules = [
+    "backend.api",
+    "backend.core",
+    "backend.db",
+    "backend.models",
+    "backend.workers",
+]
+forbidden_modules = [
+    "ib_insync",
+    "openai",
+    "anthropic",
 ]
