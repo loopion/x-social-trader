@@ -1,0 +1,154 @@
+{
+  "title": "x-social-trader",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "editable": true,
+  "tags": ["x-social-trader", "trading", "llm"],
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Ingestion rate (tweets/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(xst_tweets_ingested_total[1m]) * 60",
+          "legendFormat": "tweets/min",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "LLM calls by status (rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(xst_llm_calls_total[5m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Ingestion → decision latency (p50 / p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, sum(rate(xst_ingestion_to_decision_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(xst_ingestion_to_decision_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Orders submitted (by mode)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum by (mode) (rate(xst_orders_submitted_total[5m]))",
+          "legendFormat": "{{mode}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Daily LLM cost (USD)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 16 },
+      "targets": [
+        { "expr": "xst_llm_cost_usd_daily", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Daily P&L (USD)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 16 },
+      "targets": [
+        { "expr": "xst_pnl_daily_usd", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Drawdown %",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 16 },
+      "targets": [
+        { "expr": "xst_drawdown_pct", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 2 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Kill switch activations (24h)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 16 },
+      "targets": [
+        {
+          "expr": "increase(xst_kill_switch_activations_total[24h])",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

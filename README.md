@@ -35,6 +35,16 @@ uv run uvicorn backend.api.main:app --reload
 # → http://localhost:8000/health
 ```
 
+### Observabilité
+
+| Endpoint | Rôle |
+|---|---|
+| `GET /health` | Liveness — toujours 200 si le process répond. |
+| `GET /ready` | Readiness — vérifie DB (SQLite/Postgres) + Redis, retourne 503 si une dépendance est en panne. |
+| `GET /metrics` | Scrape Prometheus — métriques préfixées `xst_…` (counters, histogrammes, gauges). |
+
+Dashboard Grafana : `ops/grafana/x-social-trader.json` (importable via l'UI Grafana). Logs structlog JSON avec redaction automatique des clés sensibles (INV-5).
+
 ### Migrations
 
 ```bash
