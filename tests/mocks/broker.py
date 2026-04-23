@@ -5,24 +5,47 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from backend.providers import Fill, OrderReceipt, ValidatedOrder
+from backend.providers import Fill, OrderReceipt, Position, ValidatedOrder
 
 
 class MockBrokerProvider:
     """In-memory broker simulator.
 
-    - ``place_order`` records the order and returns a deterministic receipt.
+    - ``connect`` / ``disconnect`` flip ``connected`` so readiness tests can
+      assert lifecycle.
+    - ``place_order`` records the order and returns a deterministic receipt
+      (unless ``place_order_fails=True``).
     - ``cancel_all`` flips ``cancel_all_called`` so KILL-02 tests can assert.
-    - ``simulate_fill`` synthesises a Fill against a previously placed order,
-      useful for driving the rule engine → order → fill E2E scenarios.
+    - ``simulate_fill`` synthesises a Fill against a previously placed order.
+    - Read methods (``get_account_summary``, ``get_positions``,
+      ``get_open_orders``) return whatever the test pre-seeded.
     """
 
-    def __init__(self, *, place_order_fails: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        place_order_fails: bool = False,
+        account_summary: dict[str, float] | None = None,
+        positions: list[Position] | None = None,
+    ) -> None:
         self._fail = place_order_fails
+        self._account_summary = dict(account_summary or {})
+        self._positions = list(positions or [])
+        self.connected = False
         self.placed: list[ValidatedOrder] = []
         self.receipts: list[OrderReceipt] = []
         self.fills: list[Fill] = []
         self.cancel_all_called = False
+
+    # ---- Lifecycle ----------------------------------------------------------
+
+    async def connect(self) -> None:
+        self.connected = True
+
+    async def disconnect(self) -> None:
+        self.connected = False
+
+    # ---- Write methods ------------------------------------------------------
 
     async def place_order(self, order: ValidatedOrder) -> OrderReceipt:
         if self._fail:
@@ -64,3 +87,14 @@ class MockBrokerProvider:
             if r.idempotency_key == receipt.idempotency_key:
                 return order.symbol
         raise LookupError(f"no placed order matching receipt {receipt.external_id}")
+
+    # ---- Read methods -------------------------------------------------------
+
+    async def get_account_summary(self) -> dict[str, float]:
+        return dict(self._account_summary)
+
+    async def get_positions(self) -> list[Position]:
+        return list(self._positions)
+
+    async def get_open_orders(self) -> list[OrderReceipt]:
+        return list(self.receipts)

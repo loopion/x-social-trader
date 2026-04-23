@@ -17,6 +17,7 @@ dependencies = [
     "greenlet>=3.1",
     "prometheus-client>=0.21",
     "redis>=5.2",
+    "ib-insync>=0.9.86",
 ]
 
 [dependency-groups]
@@ -91,7 +92,10 @@ check_untyped_defs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 exclude = ["frontend/", "data/", "logs/"]
-# Tests override re-added in phase 2 when mypy also runs on tests/.
+
+[[tool.mypy.overrides]]
+module = ["ib_insync", "ib_insync.*"]
+ignore_missing_imports = true
 
 # -----------------------------------------------------------------------------
 # Pytest
@@ -100,7 +104,11 @@ exclude = ["frontend/", "data/", "logs/"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-q --strict-markers --strict-config"
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    # eventkit (transitive dep of ib_insync) calls get_event_loop at import.
+    "ignore::DeprecationWarning:eventkit.*",
+]
 
 # -----------------------------------------------------------------------------
 # Coverage — global ≥ 80 %, risk_manager 100 % (enforced once phase 6 lands)
@@ -113,6 +121,7 @@ source = [
     "backend/db",
     "backend/models",
     "backend/providers",
+    "backend/services",
 ]
 omit = ["backend/workers/*_stub.py", "tests/*"]
 
@@ -143,6 +152,7 @@ source_modules = [
     "backend.core",
     "backend.db",
     "backend.models",
+    "backend.services",
     "backend.workers",
 ]
 forbidden_modules = [

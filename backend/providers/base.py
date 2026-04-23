@@ -99,6 +99,16 @@ class Fill(BaseModel):
     filled_at: datetime
 
 
+class Position(BaseModel):
+    """Broker-reported position snapshot. Shorts have ``quantity < 0``."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    symbol: str
+    quantity: int
+    avg_price_usd: float
+
+
 # -----------------------------------------------------------------------------
 # Protocols
 # -----------------------------------------------------------------------------
@@ -121,6 +131,17 @@ class LLMProvider(Protocol):
 class BrokerProvider(Protocol):
     """Broker abstraction — place_order is gated by INV-1 and INV-3 upstream."""
 
+    async def connect(self) -> None: ...
+
+    async def disconnect(self) -> None: ...
+
     async def place_order(self, order: ValidatedOrder) -> OrderReceipt: ...
 
     async def cancel_all(self) -> None: ...
+
+    # Read methods (IB-02, phase 5)
+    async def get_account_summary(self) -> dict[str, float]: ...
+
+    async def get_positions(self) -> list[Position]: ...
+
+    async def get_open_orders(self) -> list[OrderReceipt]: ...
