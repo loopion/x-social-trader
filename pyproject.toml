@@ -18,6 +18,7 @@ dependencies = [
     "prometheus-client>=0.21",
     "redis>=5.2",
     "ib-insync>=0.9.86",
+    "exchange-calendars>=4.6",
 ]
 
 [dependency-groups]
@@ -97,6 +98,10 @@ exclude = ["frontend/", "data/", "logs/"]
 module = ["ib_insync", "ib_insync.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["exchange_calendars", "exchange_calendars.*"]
+ignore_missing_imports = true
+
 # -----------------------------------------------------------------------------
 # Pytest
 # -----------------------------------------------------------------------------
@@ -121,6 +126,7 @@ source = [
     "backend/db",
     "backend/models",
     "backend/providers",
+    "backend/risk",
     "backend/services",
 ]
 omit = ["backend/workers/*_stub.py", "tests/*"]
@@ -152,6 +158,7 @@ source_modules = [
     "backend.core",
     "backend.db",
     "backend.models",
+    "backend.risk",
     "backend.services",
     "backend.workers",
 ]

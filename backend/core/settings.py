@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     max_daily_drawdown_pct: float = 3.0
     allow_after_hours: bool = False
 
+    # ---- Market calendar (RISK-01) — ISO 10383 MIC code ---------------------
+    # XNYS = NYSE, XPAR = Euronext Paris (CAC 40), XLON = LSE, etc.
+    # Validated at startup against exchange_calendars' built-in list.
+    market: str = "XNYS"
+
     # ---- Interactive Brokers (phase 5) ---------------------------------------
     ib_gateway_url: str = ""
     ib_expected_account_id: str = ""
