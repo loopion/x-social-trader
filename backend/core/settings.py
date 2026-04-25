@@ -40,7 +40,10 @@ class Settings(BaseSettings):
 
     # ---- twitterapi.io (phase 7) ---------------------------------------------
     twitterapi_io_key: str = ""
-    twitterapi_io_max_usd: float = 50.0
+    twitterapi_io_max_usd: float = 45.0  # ~= $1.50/day * 30 - see BACKLOG §7
+    twitterapi_io_cost_per_tweet_usd: float = 0.00015  # $0.15 per 1k tweets
+    twitterapi_io_base_url: str = "https://api.twitterapi.io"
+    twitterapi_io_ws_url: str = "wss://ws.twitterapi.io/twitter/tweet/websocket"
 
     # ---- LLM (phase 8) -------------------------------------------------------
     llm_provider: str = "openai_compatible"

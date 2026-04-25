@@ -33,6 +33,8 @@ repos:
           - alembic>=1.14
           - prometheus-client>=0.21
           - redis>=5.2
+          - httpx>=0.27
+          - websockets>=14
         args: [--strict, --config-file=pyproject.toml]
         files: ^backend/
 

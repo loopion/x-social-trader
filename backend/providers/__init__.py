@@ -14,6 +14,11 @@ from backend.providers.base import (
     SocialFeedProvider,
     ValidatedOrder,
 )
+from backend.providers.twitterapi_io import (
+    TwitterApiIoClient,
+    TwitterApiIoError,
+    TwitterApiIoProvider,
+)
 
 __all__ = [
     "BrokerProvider",
@@ -24,5 +29,8 @@ __all__ = [
     "Position",
     "RawTweet",
     "SocialFeedProvider",
+    "TwitterApiIoClient",
+    "TwitterApiIoError",
+    "TwitterApiIoProvider",
     "ValidatedOrder",
 ]

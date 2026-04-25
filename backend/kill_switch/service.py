@@ -144,7 +144,6 @@ async def trigger_from_drawdown(
         trigger=KillSwitchTrigger.DRAWDOWN,
         actor="risk_manager",
         reason=(
-            f"daily drawdown {drawdown_pct:.2f}% breached threshold "
-            f"{threshold_pct:.2f}% (KILL-05)"
+            f"daily drawdown {drawdown_pct:.2f}% breached threshold {threshold_pct:.2f}% (KILL-05)"
         ),
     )

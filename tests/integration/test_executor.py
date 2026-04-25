@@ -241,7 +241,9 @@ async def test_build_validation_context_counts_today_orders(
     await executor.submit(_proposed(), _ctx(), session)
     await session.commit()
 
-    context = await build_validation_context(broker=broker, session=session, now=NOW)
+    # `created_at` is set by SQLite's func.now() — use wall-clock now so the
+    # context's [midnight, midnight+1d) window catches the order we just wrote.
+    context = await build_validation_context(broker=broker, session=session, now=datetime.now(UTC))
     assert context.account_capital_usd == 50_000.0
     assert context.total_exposure_usd == 1000.0  # 10 * 100
     assert context.trades_today == 1
