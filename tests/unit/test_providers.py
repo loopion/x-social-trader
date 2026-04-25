@@ -107,15 +107,15 @@ async def test_mock_llm_provider_returns_scripted_response() -> None:
     provider = MockLLMProvider(responses={"t1": scripted})
 
     result = await provider.analyze(_raw_tweet("t1"))
-    assert result == scripted
+    assert result.decision == scripted
     assert len(provider.calls) == 1
 
 
 async def test_mock_llm_provider_returns_noise_default_when_no_script() -> None:
     provider = MockLLMProvider()
     result = await provider.analyze(_raw_tweet("unknown"))
-    assert result.intent == Intent.NOISE
-    assert result.tickers == []
+    assert result.decision.intent == Intent.NOISE
+    assert result.decision.tickers == []
 
 
 async def test_mock_broker_records_orders_and_returns_receipt() -> None:

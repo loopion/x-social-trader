@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from backend.models.enums import Intent, TimeHorizon
-from backend.providers import LLMDecision, RawTweet
+from backend.models.enums import Intent, LLMDecisionStatus, TimeHorizon
+from backend.providers import LLMAnalysisResult, LLMDecision, RawTweet
 
 DEFAULT_NOISE = LLMDecision(
     tickers=[],
@@ -18,8 +18,18 @@ DEFAULT_NOISE = LLMDecision(
 )
 
 
+def _wrap(decision: LLMDecision) -> LLMAnalysisResult:
+    return LLMAnalysisResult(
+        decision=decision,
+        prompt="mock-prompt",
+        raw_response="{}",
+        status=LLMDecisionStatus.SUCCESS,
+        provider="mock",
+    )
+
+
 class MockLLMProvider:
-    """`analyze(tweet)` returns ``responses[tweet.tweet_id]`` or DEFAULT_NOISE.
+    """`analyze(tweet)` returns the wrapped scripted decision or DEFAULT_NOISE.
 
     ``calls`` records every tweet analysed for assertions.
     """
@@ -34,6 +44,6 @@ class MockLLMProvider:
         self._default = default
         self.calls: list[RawTweet] = []
 
-    async def analyze(self, tweet: RawTweet) -> LLMDecision:
+    async def analyze(self, tweet: RawTweet) -> LLMAnalysisResult:
         self.calls.append(tweet)
-        return self._responses.get(tweet.tweet_id, self._default)
+        return _wrap(self._responses.get(tweet.tweet_id, self._default))

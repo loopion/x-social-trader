@@ -18,7 +18,14 @@ from typing import Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from backend.models.enums import Intent, OrderSide, OrderType, TimeHorizon, TradingMode
+from backend.models.enums import (
+    Intent,
+    LLMDecisionStatus,
+    OrderSide,
+    OrderType,
+    TimeHorizon,
+    TradingMode,
+)
 
 # -----------------------------------------------------------------------------
 # DTOs
@@ -53,6 +60,24 @@ class LLMDecision(BaseModel):
     prompt_version: str
     cost_usd: float = 0.0
     latency_ms: int = 0
+
+
+class LLMAnalysisResult(BaseModel):
+    """Provider return shape for ``analyze`` (LLM-02).
+
+    Wraps the parsed ``LLMDecision`` with the audit fields the worker needs
+    to satisfy INV-4 (``prompt`` + ``raw_response`` + ``status`` written to
+    ``llm_decisions``). On parse failure ``decision.intent`` is ``noise``
+    and ``status`` flags the failure mode for the audit row.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    decision: LLMDecision
+    prompt: str
+    raw_response: str
+    status: LLMDecisionStatus
+    provider: str
 
 
 class ValidatedOrder(BaseModel):
@@ -125,7 +150,7 @@ class SocialFeedProvider(Protocol):
 class LLMProvider(Protocol):
     """LLM semantic analysis of a single tweet."""
 
-    async def analyze(self, tweet: RawTweet) -> LLMDecision: ...
+    async def analyze(self, tweet: RawTweet) -> LLMAnalysisResult: ...
 
 
 class BrokerProvider(Protocol):

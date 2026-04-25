@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = ""
     llm_max_usd_per_day: float = 5.0
+    llm_request_timeout_seconds: float = 30.0
+    # Per-token costs in USD. Defaults of 0 cover the user's self-hosted
+    # gateway; populate from invoices when using a paid endpoint.
+    llm_cost_per_input_token_usd: float = 0.0
+    llm_cost_per_output_token_usd: float = 0.0
 
     # ---- Telegram (phases 11 + 13) -------------------------------------------
     telegram_bot_token: str = ""
