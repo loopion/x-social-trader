@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_allowed_chat_ids: str = ""
 
+    # ---- Rule engine (phase 9) -----------------------------------------------
+    rules_dir: str = "rules"
+
     # ---- Infrastructure ------------------------------------------------------
     database_url: str = "sqlite+aiosqlite:///./data/app.db"
     redis_url: str = "redis://redis:6379/0"

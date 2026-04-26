@@ -35,6 +35,8 @@ repos:
           - redis>=5.2
           - httpx>=0.27
           - websockets>=14
+          - pyyaml>=6.0
+          - types-pyyaml>=6.0
         args: [--strict, --config-file=pyproject.toml]
         files: ^backend/
 
